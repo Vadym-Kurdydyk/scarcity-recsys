@@ -1,0 +1,105 @@
+experiment:
+  version: 0.3.1
+  dataset: yelp_reviews
+  data_config:
+    strategy: dataset
+    dataset_path: data/yelp/yelp_elliot.tsv
+    side_information:
+      - dataloader: ItemAttributes
+        attribute_file: data/yelp/item_attributes.tsv
+#  prefiltering:
+#    strategy: user_average # Not applied in the paper experiments
+  splitting:
+    save_on_disk: True
+    save_folder: data/yelp/splits
+    test_splitting:
+        strategy: temporal_hold_out
+        test_ratio: 0.2
+    validation_splitting:
+        strategy: temporal_hold_out
+        test_ratio: 0.2
+  top_k: 50
+  evaluation:
+    cutoffs: [10, 5]
+    simple_metrics: [nDCG,Precision,ItemCoverage,EPC,Gini]
+    relevance_threshold: 1
+  gpu: 1
+  external_models_path: elliot_repo/external/models/__init__.py
+  models:
+    Random:
+      meta:
+        verbose: True
+        save_recs: True
+      seed: 42
+    external.MostPop:
+      meta:
+        verbose: True
+        save_recs: True
+        validation_metric: nDCG@10
+    UserKNN:
+      meta:
+        save_recs: True
+      neighbors: 40
+      similarity: cosine
+      implementation: aiolli
+    ItemKNN:
+      meta:
+        verbose: True
+        save_recs: True
+        validation_metric: nDCG@10
+      neighbors: [50, 70, 100]
+      similarity: [cosine, euclidean]
+      implementation: standard
+    AttributeItemKNN:
+      meta:
+        verbose: True
+        save_recs: True
+        validation_metric: nDCG@10
+      loader: ItemAttributes
+      neighbors: [50, 70, 100]
+      similarity: [braycurtis, manhattan]
+    MF:
+      meta:
+        save_recs: True
+      epochs: 10
+      batch_size: 512
+      factors: 10
+      lr: 0.001
+      reg: 0.1
+    PureSVD:
+      meta:
+        save_recs: True
+      factors: 10
+      seed: 42
+    BPRMF:
+      meta:
+        save_recs: True
+      epochs: 10
+      factors: 10
+      lr: 0.001
+      bias_regularization: 0
+      user_regularization: 0.0025
+      positive_item_regularization: 0.0025
+      negative_item_regularization: 0.0025
+      update_negative_item_factors: True
+      update_users: True
+      update_items: True
+      update_bias: True
+    NonNegMF:
+      meta:
+        save_recs: True
+      epochs: 10
+      batch_size: 512
+      factors: 10
+      lr: 0.001
+      reg: 0.1
+    PMF:
+      meta:
+        save_recs: True
+      epochs: 10
+      batch_size: 512
+      factors: 50
+      lr: 0.001
+      reg: 0.0025
+      gaussian_variance: 0.1
+
